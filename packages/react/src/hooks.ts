@@ -85,6 +85,8 @@ export interface UseUIStreamOptions {
   api: string;
   /** Callback when complete */
   onComplete?: (tree: UITree) => void;
+  /** Validate the final tree */
+  validateTree?: (tree: UITree) => { success: boolean; error?: Error };
   /** Callback on error */
   onError?: (error: Error) => void;
 }
@@ -111,6 +113,7 @@ export interface UseUIStreamReturn {
 export function useUIStream({
   api,
   onComplete,
+  validateTree,
   onError,
 }: UseUIStreamOptions): UseUIStreamReturn {
   const [tree, setTree] = useState<UITree | null>(null);
@@ -185,6 +188,13 @@ export function useUIStream({
           if (patch) {
             currentTree = applyPatch(currentTree, patch);
             setTree({ ...currentTree });
+          }
+        }
+
+        if (validateTree) {
+          const result = validateTree(currentTree);
+          if (!result.success) {
+            throw result.error ?? new Error("Tree validation failed");
           }
         }
 
