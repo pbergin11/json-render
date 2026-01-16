@@ -9,6 +9,7 @@ import {
   Renderer,
 } from "@json-render/react";
 import { componentRegistry } from "@/components/ui";
+import { dashboardCatalog } from "@/lib/catalog";
 
 const INITIAL_DATA = {
   analytics: {
@@ -71,6 +72,13 @@ function DashboardContent() {
   const [prompt, setPrompt] = useState("");
   const { tree, isStreaming, error, send, clear } = useUIStream({
     api: "/api/generate",
+    validateTree: (nextTree) => {
+      const result = dashboardCatalog.validateTree(nextTree);
+      return {
+        success: result.success,
+        error: result.error ? new Error(result.error.message) : undefined,
+      };
+    },
     onError: (err) => console.error("Generation error:", err),
   });
 
